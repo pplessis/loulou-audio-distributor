@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Accueil - Loulou Audio Distributor{% endblock %}
+
+{% block content %}
+    <h2>📖 Sélectionne un livre pour commencer l'histoire :</h2>
+    <div class="books-grid">
+        {% for book in books %}
+        <div class="book-card">
+            <a href="{{ url_for('book', book_id=book.title|lower|replace(' ', '-')) }}">
+                <img src="{{ book.cover }}" alt="Couverture de {{ book.title }}" class="book-cover">
+                <h3>{{ book.title }}</h3>
+                <p><strong>Auteur :</strong> {{ book.author }}</p>
+                <p><strong>Chapitres :</strong> {{ book.chapters }}</p>
+                <p><strong>Durée totale :</strong> {{ book.duration }}</p>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+{% endblock %}
