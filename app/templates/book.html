@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}{{ book.title }} - Loulou Audio Distributor{% endblock %}
+
+{% block content %}
+    <div class="book-detail">
+        <div class="book-header">
+            <img src="{{ book.cover }}" alt="Couverture de {{ book.title }}" class="book-cover-detail">
+            <div class="book-info">
+                <h2>{{ book.title }}</h2>
+                <p><strong>Auteur :</strong> {{ book.author }}</p>
+                <p><strong>Nombre de chapitres :</strong> {{ book.chapters }}</p>
+                <p><strong>Durée totale :</strong> {{ book.duration }}</p>
+            </div>
+        </div>
+
+        <div class="chapters-list">
+            <h3>🎧 Sélectionne un chapitre pour écouter :</h3>
+            <ul>
+                {% for chapter in book.chapters_list %}
+                <li>
+                    <button onclick="playChapter('{{ chapter.audio }}', '{{ chapter.title }}')">
+                        {{ chapter.title }}
+                    </button>
+                    <span class="chapter-duration">{{ chapter.duration if chapter.duration else "Durée inconnue" }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="audio-player-container">
+            <h3>🔊 Lecteur Audio</h3>
+            <audio id="audioPlayer" controls>
+                <source id="audioSource" src="" type="audio/mpeg">
+                Votre navigateur ne supporte pas l'élément audio.
+            </audio>
+            <div class="player-info" id="playerInfo">
+                <p>Sélectionne un chapitre pour commencer l'écoute.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/player.js') }}"></script>
+{% endblock %}
