@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+.env
+.env.*
+*.log
+
+# Virtual environments
+.venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.coverage/
+htmlcov/
+.pytest_cache/
+
+# Flask
+instance/
+.webassets-cache/
+
+# Per-user progress data (do not commit user reading positions)
+app/books/progress/
