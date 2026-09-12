@@ -2,5 +2,10 @@
   "buildCommand": "pip install -r app/requirements.txt",
   "outputDirectory": "app",
   "framework": "flask",
-  "installCommand": "pip install -r app/requirements.txt"
+  "installCommand": "pip install -r app/requirements.txt",
+  "frameworkSettings": {
+    "python": {
+      "entrypoint": "app/app.py"
+    }
+  }
 }
