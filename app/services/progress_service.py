@@ -7,7 +7,12 @@ PROGRESS_DIR = os.path.join(os.path.dirname(__file__), '..', 'books', 'progress'
 
 
 def _ensure_progress_dir():
-    os.makedirs(PROGRESS_DIR, exist_ok=True)
+    # Create progress directory if it doesn't exist (local development)
+    # Vercel Serverless has read-only filesystem, so this dir must already exist
+    try:
+        os.makedirs(PROGRESS_DIR, exist_ok=True)
+    except OSError:
+        pass  # Read-only filesystem on Vercel (ignored)
 
 
 def get_user_file_path(user_id):
