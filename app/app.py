@@ -1,5 +1,6 @@
 import os
 import sys
+from flask import send_from_directory
 
 # Allow imports when running as script (cd app && python app.py)
 _repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -41,6 +42,11 @@ login_manager.login_view = 'login_page'
 
 BOOKS_METADATA_DIR = os.path.join(os.path.dirname(__file__), 'books', 'metadata')
 PROGRESS_DIR = os.path.join(os.path.dirname(__file__), 'books', 'progress')
+
+# Serve static files from app/static/ directory
+@app.route('/static/<path:path>')
+def serve_static(path):
+    return send_from_directory('app/static', path)
 
 # Create progress directory if it doesn't exist (local development)
 # Vercel Serverless has read-only filesystem, so this dir must already exist
