@@ -9,7 +9,12 @@ USERS_FILE = os.path.join(PROGRESS_DIR, '_users.json')
 
 
 def _ensure_progress_dir():
-    os.makedirs(PROGRESS_DIR, exist_ok=True)
+    # Create progress directory if it doesn't exist (local development)
+    # Vercel Serverless has read-only filesystem, so this dir must already exist
+    try:
+        os.makedirs(PROGRESS_DIR, exist_ok=True)
+    except OSError:
+        pass  # Read-only filesystem on Vercel (ignored)
 
 
 def hash_password(bcrypt, password):
