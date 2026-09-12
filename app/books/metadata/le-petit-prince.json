@@ -1,0 +1,12 @@
+{
+  "title": "Le Petit Prince",
+  "author": "Antoine de Saint-Exupéry",
+  "cover": "https://www.lepetitprince.com/wp-content/uploads/2023/01/COVER-Le-Petit-Prince-FR-980x1407.jpg",
+  "chapters": 3,
+  "duration": "45 min",
+  "chapters_list": [
+    {"title": "Chapitre 1", "audio": "https://example.com/ch1.mp3", "duration": "15 min"},
+    {"title": "Chapitre 2", "audio": "https://example.com/ch2.mp3", "duration": "15 min"},
+    {"title": "Chapitre 3", "audio": "https://example.com/ch3.mp3", "duration": "15 min"}
+  ]
+}

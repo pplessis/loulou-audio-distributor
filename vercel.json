@@ -1,0 +1,6 @@
+{
+  "buildCommand": "pip install -r app/requirements.txt",
+  "outputDirectory": "app",
+  "framework": "flask",
+  "installCommand": "pip install -r app/requirements.txt"
+}

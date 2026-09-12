@@ -1,9 +1,33 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify
-from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
-from flask_bcrypt import Bcrypt
 import os
+import sys
+
+# Allow imports when running as script (cd app && python app.py)
+_repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _repo_root not in sys.path:
+    sys.path.insert(0, _repo_root)
+
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, Response
+import requests
+from urllib.parse import unquote
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from flask_bcrypt import Bcrypt
 import json
-from datetime import datetime, timezone
+import logging
+
+from app.models.user import User
+from app.services.auth_service import (
+    hash_password,
+    verify_password,
+    save_user_record,
+    get_user_by_username,
+    get_user_by_id,
+)
+from app.services.progress_service import (
+    read_user_progress,
+    write_user_progress,
+    get_book_position,
+    update_book_position,
+)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
@@ -20,99 +44,38 @@ PROGRESS_DIR = os.path.join(os.path.dirname(__file__), 'books', 'progress')
 
 os.makedirs(PROGRESS_DIR, exist_ok=True)
 
-
-class User(UserMixin):
-    def __init__(self, user_id, username):
-        self.id = user_id
-        self.username = username
+logging.basicConfig(level=logging.INFO)
 
 
 @login_manager.user_loader
 def load_user(user_id):
-    users_file = os.path.join(PROGRESS_DIR, '_users.json')
-    if not os.path.exists(users_file):
-        return None
-    with open(users_file, 'r') as f:
-        users = json.load(f)
-    if user_id in users:
-        return User(user_id, users[user_id]['username'])
-    return None
-
-
-def hash_password(password):
-    return bcrypt.generate_password_hash(password).decode('utf-8')
-
-
-def verify_password(password, password_hash):
-    return bcrypt.check_password_hash(password_hash, password)
-
-
-def read_user_progress(user_id):
-    progress_file = os.path.join(PROGRESS_DIR, f'{user_id}.json')
-    if not os.path.exists(progress_file):
-        return {}
-    with open(progress_file, 'r') as f:
-        return json.load(f)
-
-
-def write_user_progress(user_id, data):
-    progress_file = os.path.join(PROGRESS_DIR, f'{user_id}.json')
-    with open(progress_file, 'w') as f:
-        json.dump(data, f, indent=2, default=str)
-
-
-def get_book_position(user_id, book_id):
-    progress = read_user_progress(user_id)
-    if book_id in progress:
-        return progress[book_id].get('last_chapter', 1)
-    return 1
-
-
-def get_user_file_path(user_id):
-    return os.path.join(PROGRESS_DIR, f'{user_id}.json')
-
-
-def save_user_record(user_id, username, password_hash):
-    users_file = os.path.join(PROGRESS_DIR, '_users.json')
-    users = {}
-    if os.path.exists(users_file):
-        with open(users_file, 'r') as f:
-            users = json.load(f)
-    users[user_id] = {'username': username, 'password_hash': password_hash}
-    with open(users_file, 'w') as f:
-        json.dump(users, f, indent=2)
-
-
-def get_user_by_username(username):
-    users_file = os.path.join(PROGRESS_DIR, '_users.json')
-    if not os.path.exists(users_file):
-        return None
-    with open(users_file, 'r') as f:
-        users = json.load(f)
-    for uid, data in users.items():
-        if data['username'] == username:
-            return uid, data
-    return None, None
+    user, _ = get_user_by_id(user_id)
+    return user
 
 
 @app.errorhandler(401)
 def unauthorized(e):
-    return jsonify({'error': 'Authentication required'}), 401
+    if request.is_json:
+        return jsonify({'error': 'Authentication required'}), 401
+    return redirect(url_for('login_page'))
 
 
 @app.errorhandler(404)
 def not_found(e):
-    return jsonify({'error': 'Resource not found'}), 404
+    if request.is_json:
+        return jsonify({'error': 'Resource not found'}), 404
+    return "Livre introuvable", 404
 
 
 @app.route('/')
 def index():
     books = []
-    for filename in os.listdir(BOOKS_METADATA_DIR):
-        if filename.endswith('.json'):
-            with open(os.path.join(BOOKS_METADATA_DIR, filename), 'r', encoding='utf-8') as f:
-                book_data = json.load(f)
-                books.append(book_data)
+    if os.path.isdir(BOOKS_METADATA_DIR):
+        for filename in os.listdir(BOOKS_METADATA_DIR):
+            if filename.endswith('.json'):
+                with open(os.path.join(BOOKS_METADATA_DIR, filename), 'r', encoding='utf-8') as f:
+                    book_data = json.load(f)
+                    books.append(book_data)
     progress_data = {}
     if current_user.is_authenticated:
         progress_data = read_user_progress(str(current_user.id))
@@ -149,7 +112,7 @@ def register():
     if existing_uid:
         return jsonify({'error': 'Username already exists'}), 409
     user_id = str(len(os.listdir(PROGRESS_DIR)) + 1)
-    password_hash = hash_password(password)
+    password_hash = hash_password(bcrypt, password)
     save_user_record(user_id, username, password_hash)
     user = User(user_id, username)
     login_user(user)
@@ -162,7 +125,7 @@ def login():
     username = data.get('username', '').strip()
     password = data.get('password', '')
     uid, user_data = get_user_by_username(username)
-    if not uid or not verify_password(password, user_data['password_hash']):
+    if not uid or not verify_password(bcrypt, password, user_data['password_hash']):
         return jsonify({'error': 'Invalid credentials'}), 401
     user = User(uid, user_data['username'])
     login_user(user)
@@ -179,15 +142,16 @@ def logout():
 @app.route('/progress')
 @login_required
 def progress():
-    progress = read_user_progress(str(current_user.id))
+    prog = read_user_progress(str(current_user.id))
     books = []
-    for filename in os.listdir(BOOKS_METADATA_DIR):
-        if filename.endswith('.json'):
-            with open(os.path.join(BOOKS_METADATA_DIR, filename), 'r', encoding='utf-8') as f:
-                book_data = json.load(f)
-                book_id = filename.replace('.json', '')
-                last_chapter = progress.get(book_id, {}).get('last_chapter') if progress else None
-                books.append({'book_id': book_id, 'title': book_data['title'], 'last_chapter': last_chapter})
+    if os.path.isdir(BOOKS_METADATA_DIR):
+        for filename in os.listdir(BOOKS_METADATA_DIR):
+            if filename.endswith('.json'):
+                with open(os.path.join(BOOKS_METADATA_DIR, filename), 'r', encoding='utf-8') as f:
+                    book_data = json.load(f)
+                    book_id = filename.replace('.json', '')
+                    last_chapter = prog.get(book_id, {}).get('last_chapter') if prog else None
+                    books.append({'book_id': book_id, 'title': book_data['title'], 'last_chapter': last_chapter})
     return jsonify(books)
 
 
@@ -196,15 +160,49 @@ def progress():
 def save_position(book_id):
     data = request.get_json()
     chapter_number = data.get('chapter_number', 1)
-    progress = read_user_progress(str(current_user.id))
-    progress[book_id] = {'last_chapter': chapter_number, 'last_updated': datetime.now(timezone.utc).isoformat()}
-    write_user_progress(str(current_user.id), progress)
+    update_book_position(str(current_user.id), book_id, chapter_number)
     return jsonify({'message': 'Position saved'}), 200
 
 
 @app.route('/login')
 def login_page():
     return render_template('login.html')
+
+
+@app.route('/audio')
+@login_required
+def audio_proxy():
+    audio_url = request.args.get('url', '')
+    if not audio_url:
+        return jsonify({'error': 'URL parameter required'}), 400
+    
+    # Handle Google Drive URLs - convert to direct download format
+    if 'drive.google.com' in audio_url:
+        if '/uc?export=download' in audio_url:
+            # Already in download format
+            pass
+        elif '/file/d/' in audio_url:
+            # Extract file ID and convert to download URL
+            file_id = audio_url.split('/file/d/')[1].split('/')[0]
+            audio_url = f'https://drive.google.com/uc?export=download&id={file_id}'
+    
+    try:
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+        req = requests.get(audio_url, headers=headers, stream=True, timeout=30)
+        req.raise_for_status()
+        content_type = req.headers.get('Content-Type', 'audio/mpeg')
+        def generate():
+            for chunk in req.iter_content(chunk_size=8192):
+                yield chunk
+        return Response(generate(), mimetype=content_type, headers={
+            'Access-Control-Allow-Origin': '*',
+            'Cache-Control': 'public, max-age=3600'
+        })
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Audio proxy error: {e}")
+        return jsonify({'error': str(e)}), 502
 
 
 if __name__ == '__main__':

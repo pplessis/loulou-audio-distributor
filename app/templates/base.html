@@ -11,6 +11,14 @@
     <header>
         <h1>📚 Loulou Audio Distributor</h1>
         <p>Des histoires pour s'endormir en douceur...</p>
+        <div class="auth-nav">
+            {% if user and user.is_authenticated %}
+                <span>👤 {{ user.username }}</span>
+                <a href="{{ url_for('logout') }}">Se déconnecter</a>
+            {% else %}
+                <a href="{{ url_for('login_page') }}">Se connecter / S'inscrire</a>
+            {% endif %}
+        </div>
     </header>
     <main>
         {% block content %}{% endblock %}

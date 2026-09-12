@@ -14,12 +14,12 @@
             </div>
         </div>
 
-        <div class="chapters-list">
+        <div class="chapters-list" data-book-id="{{ book.title|lower|replace(' ', '-') }}" data-last-chapter="{{ last_chapter }}">
             <h3>🎧 Sélectionne un chapitre pour écouter :</h3>
             <ul>
                 {% for chapter in book.chapters_list %}
-                <li>
-                    <button onclick="playChapter('{{ chapter.audio }}', '{{ chapter.title }}')">
+                <li class="{% if loop.index == last_chapter %}active-chapter{% endif %}">
+                    <button onclick="playChapter('{{ chapter.audio }}', '{{ chapter.title }}', {{ loop.index }})">
                         {{ chapter.title }}
                     </button>
                     <span class="chapter-duration">{{ chapter.duration if chapter.duration else "Durée inconnue" }}</span>
@@ -31,7 +31,7 @@
         <div class="audio-player-container">
             <h3>🔊 Lecteur Audio</h3>
             <audio id="audioPlayer" controls>
-                <source id="audioSource" src="" type="audio/mpeg">
+                <source id="audioSource" src="">
                 Votre navigateur ne supporte pas l'élément audio.
             </audio>
             <div class="player-info" id="playerInfo">
