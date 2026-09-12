@@ -34,5 +34,3 @@ htmlcov/
 instance/
 .webassets-cache/
 
-# Per-user progress data (do not commit user reading positions)
-app/books/progress/
