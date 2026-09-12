@@ -42,7 +42,12 @@ login_manager.login_view = 'login_page'
 BOOKS_METADATA_DIR = os.path.join(os.path.dirname(__file__), 'books', 'metadata')
 PROGRESS_DIR = os.path.join(os.path.dirname(__file__), 'books', 'progress')
 
-os.makedirs(PROGRESS_DIR, exist_ok=True)
+# Create progress directory if it doesn't exist (local development)
+# Vercel Serverless has read-only filesystem, so this dir must already exist
+try:
+    os.makedirs(PROGRESS_DIR, exist_ok=True)
+except OSError:
+    pass  # Read-only filesystem on Vercel (ignored)
 
 logging.basicConfig(level=logging.INFO)
 
