@@ -1,6 +1,8 @@
 import os
 import sys
+
 from flask import send_from_directory
+from pathlib import Path
 
 # Allow imports when running as script (cd app && python app.py)
 _repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -30,7 +32,15 @@ from app.services.progress_service import (
     update_book_position,
 )
 
-app = Flask(__name__)
+REPO_ROOT = Path(__file__).resolve().parent.parent
+STATIC_DIR = REPO_ROOT / "static"
+
+
+
+app = Flask(__name__,
+        static_folder=str(STATIC_DIR),
+        static_url_path="/static",
+            )
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
