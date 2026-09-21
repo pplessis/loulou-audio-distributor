@@ -79,7 +79,7 @@ En tant qu'administrateur d'une bibliothèque audio, je veux pointer l'outil ver
 - **FR-010**: The system MUST upload the cover image file if it is a local file; if cover is already a public external URL, it MUST be preserved as-is.
 - **FR-011**: The system MUST configure a public read-only sharing permission on each uploaded file (MP3 and local cover).
 - **FR-012**: The system MUST produce, for each publicly shared file, a link accessible without authentication.
-- **FR-013**: The system MUST generate, for each processed audiobook, a JSON file conforming to the schema defined in the Key Entities section, including title, author, cover, chapters, duration, minimum-age, and chapters_list.
+- **FR-013**: The system MUST generate, for each processed audiobook, a JSON file conforming to the schema defined in the JSON Index File Format and Key Entities sections, including title, author, cover, chapters, duration, minimum-age, and chapters_list.
 - **FR-014**: The system MUST guarantee idempotency: re-running on an already-processed directory MUST NOT duplicate Drive files or folders nor regenerate existing public links.
 - **FR-015**: The system MUST continue processing other audiobooks in case of an error on one of them (corrupted file, upload failure), and log the associated error.
 - **FR-016**: The system MUST allow configuration of the destination root folder on Google Drive.
@@ -93,6 +93,29 @@ En tant qu'administrateur d'une bibliothèque audio, je veux pointer l'outil ver
 - **FR-021**: The system MUST handle API quota and rate limit exceeded errors via [INFORMED DEFAULT: exponential backoff with jitter, retrying up to 5 times before giving up on the specific file and logging the error].
 - **FR-022**: Support for multi-level folder structures (e.g., series/seasons) MUST be [NEEDS CLARIFICATION: required in V1 or deferred to V2?].
 - **FR-023**: In the absence of a cover, the expected behavior is [INFORMED DEFAULT: cover field is empty string, processing continues without error].
+
+### JSON Index File Format
+
+The JSON index file generated for each audiobook MUST include a `chapters_list` section listing each chapter with its public audio link and duration. The structure follows the reference example at `app/books/metadata/coup-de-gigot-et-autres-histoires-a-faire-peur.json`:
+
+```json
+{
+  "title": "Coup de gigot et autres histoires a faire peur",
+  "author": "Roald Dahl",
+  "cover": "https://www.gallimard-jeunesse.fr/assets/media/cache/cover_medium/gallimard_img/image/A61291.jpg",
+  "chapters": 3,
+  "duration": "45 min",
+  "chapters_list": [
+     {"title": "Chapitre 1-Coup de gigot", "audio": "https://drive.google.com/file/d/1EeSxFJW9mvzBiOOT7zzGmgDyVKpOn3RY", "duration": "22 min"}
+    ,{"title": "Chapitre 2-Tous les chemins mènent au ciel", "audio": "https://drive.google.com/file/d/1p6P9-QduIlicDrnZLnm6PZtL4lBZtKD1", "duration": "29 min"}
+    ,{"title": "Chapitre 3-La logeuse", "audio": "https://drive.google.com/file/d/1jOKHkZHMiezTaUREN6EM5FhqEzuYe8mK", "duration": "21 min"}
+    ,{"title": "Chapitre 4A-Willian et Mary ", "audio": "https://drive.google.com/file/d/1yvG5ZGXvDG4GuLmPFTGvLldd-Od5ZK3a", "duration": "9 min"}
+    ,{"title": "Chapitre 4B-Willian et Mary ", "audio": "https://drive.google.com/file/d/1_KiTinCNndLW8PfhITNNu2YEEoommO3j", "duration": "27 min"}
+    ,{"title": "Chapitre 4C-Willian et Mary ", "audio": "https://drive.google.com/file/d/1wirw11MQD072PY70LPae8OslNptFL1Lm", "duration": "9 min"}
+    ,{"title": "Chapitre 4D-Willian et Mary ", "audio": "https://drive.google.com/file/d/1knQ7KMWETqjAiUmbkVQtX4309206FRSY", "duration": "18 min"}
+  ]
+}
+```
 
 ### Key Entities *(include if feature involves data)*
 

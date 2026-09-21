@@ -9,7 +9,7 @@
 - [x] No implementation details (languages, frameworks, APIs) — The spec avoids mentioning Python, Flask, or specific libraries
 - [x] Focused on user value and business needs — All requirements describe what the system achieves for the user
 - [x] Written for non-technical stakeholders — Acceptance scenarios use Given/When/Then in plain language
-- [x] All mandatory sections completed — User Scenarios, Requirements, Key Entities, Success Criteria, Assumptions all present
+- [x] All mandatory sections completed — User Scenarios, Requirements, JSON Index File Format, Key Entities, Success Criteria, Assumptions all present
 
 ## Requirement Completeness
 
@@ -32,4 +32,5 @@
 
 - 3 [NEEDS CLARIFICATION] markers remain (FR-018: auth method, FR-020: link type, FR-022: multi-level support in V1 or V2). These are the 3 highest-impact questions prioritized by scope and security concerns.
 - All other clarification points (FR-019: duration format, FR-021: retry strategy, FR-023: no-cover behavior) have been resolved with informed defaults documented in the spec.
+- Added `JSON Index File Format` section documenting the concrete `chapters_list` structure, based on the reference example at `app/books/metadata/coup-de-gigot-et-autres-histoires-a-faire-peur.json`.
 - Items marked incomplete require spec updates before `/speckit.clarify` or `/speckit.plan`.
