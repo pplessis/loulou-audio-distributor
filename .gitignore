@@ -34,3 +34,8 @@ htmlcov/
 instance/
 .webassets-cache/
 
+
+#Secrets
+google-credentials.json
+.drive_token.json
+

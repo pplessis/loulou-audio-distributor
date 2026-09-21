@@ -95,8 +95,8 @@ En tant qu'administrateur, je veux valider les métadonnées de mes audiobooks c
 ### Measurable Outcomes
 
 - **SC-001**: 100% of sync operations generate log entries for each processed audiobook and file upload.
-- **SC-002**: When compression is enabled, 95% of MP3 files are reduced in size by at least 20% while remaining playable.
-- **SC-003**: Metadata validation successfully matches at least 80% of well-known audiobooks against the online database.
+- **SC-002**: When compression is enabled, 95% of MP3 files in the test corpus are reduced in size by at least 20% while remaining playable (verified by an aggregate test over a fixture set of ≥10 varied MP3 files).
+- **SC-003**: Metadata validation successfully matches at least 80% of a defined corpus of 20 well-known public-domain audiobooks (list maintained in `tests/fixtures/well_known_audiobooks.json`) against the online database.
 - **SC-004**: Users can configure logging path, log level, compression, and metadata API endpoint before running the tool.
 - **SC-005**: When the online database is unreachable, the sync continues for all other audiobooks without interruption, with appropriate warnings logged.
 
@@ -117,7 +117,7 @@ En tant qu'administrateur, je veux valider les métadonnées de mes audiobooks c
 ## Out of Scope
 
 - Building or hosting a custom audiobook metadata database.
-- Supporting non-MP3 audio formats in the compression step (MP3 only, as per FR-022 in base spec).
+- Supporting non-MP3 audio formats in the compression step (MP3 only, per base feature FR-002 / Assumptions — non-MP3 files are ignored).
 - Real-time streaming of compressed files.
 - Cross-referencing against multiple databases simultaneously.
 

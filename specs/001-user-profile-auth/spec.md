@@ -6,7 +6,7 @@
 
 **Status**: Draft
 
-**Input**: User description: "Creation d'un system de Profile (login+PWD) pour sauvegarder la position de lecture des chapitres par livre."
+**Input**: User description: "Creation d'un system de Profile (login+PWD+Age) pour sauvegarder la position de lecture des chapitres par livre."
 
 ## User Scenarios & Testing *(mandatory)*
 

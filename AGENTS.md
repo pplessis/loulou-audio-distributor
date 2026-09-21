@@ -41,6 +41,6 @@ README describes Vercel deployment, but `vercel.json` is missing. Vercel should 
 
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
-shell commands, and other important information, read the current plan at
-specs/001-user-profile-auth/plan.md
+shell commands, and other important information, read the current plan
+at specs/003-drive-sync-enhancements/plan.md
 <!-- SPECKIT END -->

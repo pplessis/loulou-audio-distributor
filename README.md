@@ -183,6 +183,54 @@ Voici un exemple complet pour un livre :
 
 ---
 
+## 🔄 Synchronisation USB / Drive
+
+Le projet inclut un outil CLI (`sync_tool/`) pour synchroniser une bibliothèque d'audiolivres depuis un répertoire local vers Google Drive, avec les fonctionnalités suivantes :
+
+- **Journal structuré** (JSON Lines) : scan, upload, erreurs, résumé.
+- **Compression MP3 optionnelle** : réduction du bitrate avant upload (désactivée par défaut).
+- **Validation des métadonnées** : croisement avec l'API OpenLibrary (titre, auteur, couverture).
+
+### Prérequis
+
+- Python 3.11+
+- `ffmpeg` installé et accessible dans le `PATH` (nécessaire pour la compression)
+
+### Installation
+
+```bash
+pip install -r requirements.txt
+```
+
+### Utilisation
+
+```bash
+# Synchronisation avec journal
+python -m sync_tool /chemin/vers/audiolivres --log-path /tmp/sync.log
+
+# Avec compression (64k par défaut)
+python -m sync_tool /chemin/vers/audiolivres --compress --compression-level 64k
+
+# Avec validation des métadonnées
+python -m sync_tool /chemin/vers/audiolivres --metadata-endpoint https://openlibrary.org/search.json
+
+# Désactiver la validation
+python -m sync_tool /chemin/vers/audiolivres --no-metadata-validation
+```
+
+### Tests
+
+```bash
+pytest tests/
+```
+
+Mark Pytest disponibles :
+- `@pytest.mark.live` : tests utilisant la vraie API OpenLibrary (nécessite internet)
+- `@pytest.mark.drive` : tests nécessitant des credentials Google Drive
+- `@pytest.mark.slow` : tests longs (compression sur corpus de +10 fichiers)
+
+---
+
 ## 🔧 Personnalisation
 
 - **Ajouter un livre** :

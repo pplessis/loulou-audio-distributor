@@ -25,13 +25,15 @@ def verify_password(bcrypt, password, password_hash):
     return bcrypt.check_password_hash(password_hash, password)
 
 
-def save_user_record(user_id, username, password_hash):
+def save_user_record(user_id, username, password_hash, age:int=99):
     _ensure_progress_dir()
     users = {}
     if os.path.exists(USERS_FILE):
         with open(USERS_FILE, 'r', encoding='utf-8') as f:
             users = json.load(f)
-    users[user_id] = {'username': username, 'password_hash': password_hash}
+
+    users[user_id] = {'username': username, 'password_hash': password_hash, 'age': age}
+
     with open(USERS_FILE, 'w', encoding='utf-8') as f:
         json.dump(users, f, indent=2)
 
@@ -52,9 +54,12 @@ def get_user_by_id(user_id):
     _ensure_progress_dir()
     if not os.path.exists(USERS_FILE):
         return None, None
+
     with open(USERS_FILE, 'r', encoding='utf-8') as f:
         users = json.load(f)
+
     if user_id in users:
         data = users[user_id]
         return User(user_id, data['username']), data
+
     return None, None

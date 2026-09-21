@@ -1,0 +1,22 @@
+[
+  {"title": "Le Petit Prince", "author": "Antoine de Saint-Exupéry", "expected_match": true},
+  {"title": "Alice's Adventures in Wonderland", "author": "Lewis Carroll", "expected_match": true},
+  {"title": "The Adventures of Sherlock Holmes", "author": "Arthur Conan Doyle", "expected_match": true},
+  {"title": "Frankenstein", "author": "Mary Shelley", "expected_match": true},
+  {"title": "Pride and Prejudice", "author": "Jane Austen", "expected_match": true},
+  {"title": "Moby Dick", "author": "Herman Melville", "expected_match": true},
+  {"title": "The Great Gatsby", "author": "F. Scott Fitzgerald", "expected_match": true},
+  {"title": "Dracula", "author": "Bram Stoker", "expected_match": true},
+  {"title": "The Picture of Dorian Gray", "author": "Oscar Wilde", "expected_match": true},
+  {"title": "Treasure Island", "author": "Robert Louis Stevenson", "expected_match": true},
+  {"title": "The War of the Worlds", "author": "H. G. Wells", "expected_match": true},
+  {"title": "The Time Machine", "author": "H. G. Wells", "expected_match": true},
+  {"title": "The Call of the Wild", "author": "Jack London", "expected_match": true},
+  {"title": "The Jungle Book", "author": "Rudyard Kipling", "expected_match": true},
+  {"title": "The Strange Case of Dr. Jekyll and Mr. Hyde", "author": "Robert Louis Stevenson", "expected_match": true},
+  {"title": "Peter Pan", "author": "J. M. Barrie", "expected_match": true},
+  {"title": "The Wonderful Wizard of Oz", "author": "L. Frank Baum", "expected_match": true},
+  {"title": "Little Women", "author": "Louisa May Alcott", "expected_match": true},
+  {"title": "The Secret Garden", "author": "Frances Hodgson Burnett", "expected_match": true},
+  {"title": "Anne of Green Gables", "author": "L. M. Montgomery", "expected_match": true}
+]

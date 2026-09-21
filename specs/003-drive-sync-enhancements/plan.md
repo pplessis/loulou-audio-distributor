@@ -1,113 +1,92 @@
-# Implementation Plan: [FEATURE]
+# Implementation Plan: Drive Sync Enhancements
 
-**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
+**Branch**: `003-drive-sync-enhancements` | **Date**: 2026-09-19 | **Spec**: [spec.md](spec.md)
 
-**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
-
-**Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/plan-template.md` for the execution workflow.
+**Input**: Feature specification from `/specs/003-drive-sync-enhancements/spec.md`
 
 ## Summary
 
-[Extract from feature spec: primary requirement + technical approach from research]
+Extend the audiobook drive sync tool with three enhancements: structured library-creation logging (P1), optional MP3 compression before upload (P2), and metadata validation against the OpenLibrary Search API (P3). Implemented as a Python CLI (`sync_tool/`) that extends the base sync flow from feature 002. Logging uses the Python standard library; compression uses `pydub` with an `ffmpeg` backend; metadata validation uses the `requests` library against `https://openlibrary.org/search.json` (no API key required).
 
 ## Technical Context
 
-<!--
-  ACTION REQUIRED: Replace the content in this section with the technical details
-  for the project. The structure here is presented in advisory capacity to guide
-  the iteration process.
--->
+**Language/Version**: Python 3.11+
 
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]
+**Primary Dependencies**: `requests` (present), `pydub` (+ `ffmpeg` binary) for MP3 compression, `google-api-python-client` (inherited from base feature 002 for Drive upload)
 
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
+**Storage**: Local log file (configurable path); Google Drive (base feature); generated book JSON index files at `app/books/metadata/{book_id}.json`
 
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
+**Testing**: pytest — contract tests in `tests/contract/`, integration tests in `tests/integration/`
 
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]
+**Target Platform**: CLI tool run on an administrator workstation (macOS/Linux); the Flask web app remains Vercel-deployable
 
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
+**Project Type**: cli
 
-**Project Type**: [e.g., library/cli/web-service/mobile-app/compiler/desktop-app or NEEDS CLARIFICATION]
+**Performance Goals**: SC-001 (100% sync ops generate log entries); SC-002 (95% of MP3 files reduced ≥20% while playable); SC-003 (≥80% match rate for well-known audiobooks)
 
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]
+**Constraints**: MP3-only compression (per base FR-022); compression off by default; `validation_status` JSON schema change must be backward-compatible and contract-tested; dependencies kept minimal and documented in `requirements.txt`
 
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]
-
-**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+**Scale/Scope**: Small-to-medium audiobook library (up to 50 books, 30 chapters each, per base SC-001); single admin operator
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- **Principle I (familial simplicity)**: No child-facing complexity added — this is admin tooling. No violation.
+- **Principle II (stable JSON contracts)**: Adding `validation_status` to the generated book JSON index changes the metadata contract. MUST be a backward-compatible additive optional field, documented in this spec, and covered by a contract test in `tests/contract/` before implementation. **Compliance path**: additive field; contract test added in T026.
+- **Principle III (Test-First, NON-NÉGOCIABLE)**: All three stories follow TDD — contract tests first (fail → implement → pass) per tasks.md.
+- **Principle IV (real integration tests)**: Compression and metadata validation get realistic integration tests (real MP3 fixtures, recorded/real OpenLibrary responses). Drive upload integration uses realistic fixtures with a credentials-gated test; documented as an assumption in research.md.
+- **Principle V (Vercel-first, minimal deps)**: The CLI runs locally and does not affect the Vercel-deployed Flask app. New deps (`pydub`, `ffmpeg`) are justified and documented. No violation.
+
+**Gate result: PASS** — no constitution violations to justify in Complexity Tracking.
+
+**Post-Design Re-check**: All design artifacts (data-model.md, contracts/, quickstart.md) remain compliant. `validation_status` documented as optional/additive (Principle II satisfied).
 
 ## Project Structure
 
 ### Documentation (this feature)
 
 ```text
-specs/[###-feature]/
-├── plan.md              # This file (/speckit.plan command output)
-├── research.md          # Phase 0 output (/speckit.plan command)
-├── data-model.md        # Phase 1 output (/speckit.plan command)
-├── quickstart.md        # Phase 1 output (/speckit.plan command)
-├── contracts/           # Phase 1 output (/speckit.plan command)
-└── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)
+specs/003-drive-sync-enhancements/
+├── plan.md              # This file
+├── research.md          # Phase 0 output
+├── data-model.md        # Phase 1 output
+├── quickstart.md        # Phase 1 output
+├── contracts/           # Phase 1 output
+│   └── README.md
+└── tasks.md             # Phase 2 output
 ```
 
 ### Source Code (repository root)
-<!--
-  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
-  for this feature. Delete unused options and expand the chosen structure with
-  real paths (e.g., apps/admin, packages/something). The delivered plan must
-  not include Option labels.
--->
 
 ```text
-# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
-src/
-├── models/
-├── services/
-├── cli/
-└── lib/
+sync_tool/
+├── __init__.py
+├── models.py            # SyncConfig, LogEntry, CompressionSettings, DatabaseMatch, Audiobook
+├── config.py            # CLI arg/env/file config loading
+├── cli.py               # CLI entry point
+├── sync.py              # Base sync orchestration (extends feature 002)
+└── services/
+    ├── __init__.py
+    ├── logger.py        # Structured logging service
+    ├── compression.py   # MP3 compression service
+    ├── openlibrary.py   # OpenLibrary Search API client
+    └── metadata_validator.py  # Metadata validation service
 
 tests/
+├── conftest.py          # Shared fixtures (MP3 fixture, temp log dir, mocked sync context)
 ├── contract/
-├── integration/
-└── unit/
-
-# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
-
-frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure: feature modules, UI flows, platform tests]
+│   ├── test_logger.py
+│   ├── test_compression.py
+│   └── test_metadata_validator.py
+└── integration/
+    ├── test_sync_logging.py
+    ├── test_compression_flow.py
+    └── test_metadata_validation.py
 ```
 
-**Structure Decision**: [Document the selected structure and reference the real
-directories captured above]
+**Structure Decision**: Single Python CLI package `sync_tool/` at the repository root, mirroring the existing `tests/` layout used by feature 001. No new services or servers. The Flask app (`app/`) is untouched.
 
 ## Complexity Tracking
 
-> **Fill ONLY if Constitution Check has violations that must be justified**
-
-| Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
-| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
-| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
+No constitution violations to justify. The implementation stays within the existing project conventions with minimal new dependencies.
