@@ -1,0 +1,38 @@
+{
+  "mcpServers": {
+    "gitlab": {
+      "command": "npx",
+      "args": [ "-y", "@zereight/mcp-gitlab"],
+      "env": {
+        "GITLAB_PERSONAL_ACCESS_TOKEN": "${GITLAB_PERSONAL_ACCESS_TOKEN}",
+        "GITLAB_API_URL": "https://gitlab.cicd.yvesrocher.com/api/v4",
+        "GITLAB_READ_ONLY_MODE": "false"
+      }
+    },
+      
+    "sonarqube": {
+      "command": "docker",
+      "args": [ "run","-i", "--rm","--init","--pull=always", "-e","SONARQUBE_TOKEN", "-e", "SONARQUBE_URL", "-e", "SONARQUBE_IDE_PORT", "mcp/sonarqube" ],
+      "env": {
+        "SONARQUBE_TOKEN": "${SONARQUBE_TOKEN}",
+        "SONARQUBE_URL": "${SONARQUBE_URL}"
+      }
+    },
+      
+    "mcp-atlassian": {
+      "command": "uvx",
+      "args": [ "--python",    "3.13", "--quiet", "mcp-atlassian" ],
+      "env": {
+        
+        "JIRA_URL": "https://groupe-rocher.atlassian.net/",
+        "JIRA_USERNAME": "${ATLASSIAN_USERNAME}",
+        "JIRA_API_TOKEN": "${ATLASSIAN_API_TOKEN}",
+        
+        "CONFLUENCE_URL": "https://groupe-rocher.atlassian.net/wiki",
+        "CONFLUENCE_USERNAME": "${ATLASSIAN_USERNAME}",
+        "CONFLUENCE_API_TOKEN": "${ATLASSIAN_API_TOKEN}"
+      }
+    }
+    ,  
+  }
+}
