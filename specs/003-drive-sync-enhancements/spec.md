@@ -65,7 +65,8 @@ En tant qu'administrateur, je veux valider les métadonnées de mes audiobooks c
 - What happens when the online metadata database is unreachable or rate-limited?
 - What happens when the online database returns conflicting metadata (multiple matches)?
 - What happens when the user provides an invalid API key or endpoint for the metadata database?
-- **Concurrent sync**: If two sync operations attempt to create the same audiobook folder simultaneously, the last-write-wins approach is used based on timestamp ordering; the newer sync overwrites earlier state for that folder.
+- **Concurrent sync**: If two sync operations attempt to create the same audiobook folder simultaneously, the last-write-wins approach is used based on timestamp ordering; the newer sync overwrites earlier state for that folder. **A WARN log entry is generated when folder overwrite occurs, with audiobook ID and timestamps for diagnostic purposes** (FR-001).
+- **Test corpus availability**: SC-003 references 20 well-known public-domain audiobooks from `tests/fixtures/well_known_audiobooks.json`; these are not available in the local development environment and may require fixture download or remote test execution.
 
 ## Requirements *(mandatory)*
 
@@ -95,7 +96,7 @@ En tant qu'administrateur, je veux valider les métadonnées de mes audiobooks c
 ### Measurable Outcomes
 
 - **SC-001**: 100% of sync operations generate log entries for each processed audiobook and file upload.
-- **SC-002**: When compression is enabled, 95% of MP3 files in the test corpus are reduced in size by at least 20% while remaining playable (verified by an aggregate test over a fixture set of ≥10 varied MP3 files).
+- **SC-002**: When compression is enabled with 96kbps CBR bitrate, 95% of MP3 files in the test corpus are reduced in size by at least 20% while remaining playable (verified by an aggregate test over a fixture set of ≥10 varied MP3 files).
 - **SC-003**: Metadata validation successfully matches at least 80% of a defined corpus of 20 well-known public-domain audiobooks (list maintained in `tests/fixtures/well_known_audiobooks.json`) against the online database.
 - **SC-004**: Users can configure logging path, log level, compression, and metadata API endpoint before running the tool.
 - **SC-005**: When the online database is unreachable, the sync continues for all other audiobooks without interruption, with appropriate warnings logged.
@@ -124,3 +125,11 @@ En tant qu'administrateur, je veux valider les métadonnées de mes audiobooks c
 ## Notes
 
 **Selected Metadata API**: OpenLibrary Search API (https://openlibrary.org/dev/docs/api/search) — Free, no authentication required, supports title and author search with cover image results. Well-suited for audiobook metadata validation without requiring API key management.
+
+## Clarifications
+### Session 2026-10-24
+- Q: What specific audio quality metric defines "remaining playable" for compressed MP3 files in SC-002? → A: 96kbps CBR bitrate
+- Q: Does the test fixture `tests/fixtures/well_known_audiobooks.json` exist with exactly 20 well-known public-domain audiobooks as referenced in SC-003? → A: Test corpus not available locally; edge case added to spec
+- Q: Should the system support a fallback metadata API if OpenLibrary returns no matches, or is OpenLibrary sufficient as the sole metadata source for FR-010/011? → A: OpenLibrary sufficient; metadata validation (P3) is optional enhancement, no fallback needed
+- Q: For concurrent sync folder creation (last-write-wins), should there be explicit user notification when a folder is overwritten, or is silent last-write-wins acceptable for an admin tool? → A: Log WARN entry when folder overwrite occurs, with audiobook ID and timestamps
+- Q: What specific fields and format should log entries include beyond the basic timestamp/level/source/event_type/message structure, to support effective troubleshooting per FR-001 and SC-001? → A: Maintain current minimal format; only add level validation and auto-generated timestamps
